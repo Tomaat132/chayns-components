@@ -1,8 +1,9 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Button from "../../../src/react-chayns-button/component/Button";
 
-export default class Step1 extends React.Component {
+export default class Step1 extends Component {
     static contextTypes = {
         nextStep: PropTypes.func,
         stepComplete: PropTypes.func
@@ -34,12 +35,9 @@ export default class Step1 extends React.Component {
                         }
                     }
                 >
-                    <div
-                        className="button"
-                        onClick={this.next}
-                    >
+                    <Button onClick={this.next}>
                         Next
-                    </div>
+                    </Button>
                 </div>
             </div>
         );

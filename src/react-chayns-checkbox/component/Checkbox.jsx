@@ -1,11 +1,14 @@
-import React from 'react';
+/* eslint-disable jsx-a11y/label-has-associated-control */
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-export default class Checkbox extends React.Component {
+export default class Checkbox extends PureComponent {
     static propTypes = {
         style: PropTypes.object,
         className: PropTypes.string,
+        labelStyle: PropTypes.object,
+        labelClassName: PropTypes.string,
         label: PropTypes.oneOfType([
             PropTypes.node,
             PropTypes.arrayOf(PropTypes.node)
@@ -19,36 +22,29 @@ export default class Checkbox extends React.Component {
         checked: PropTypes.bool,
         defaultChecked: PropTypes.bool,
         disabled: PropTypes.bool,
-        tooltip: PropTypes.string,
-        dangerouslySetLabel: PropTypes.object
+        dangerouslySetLabel: PropTypes.object,
+        stopPropagation: PropTypes.bool
     };
 
     static defaultProps = {
         style: null,
         className: null,
         label: null,
+        labelClassName: null,
+        labelStyle: null,
         children: null,
         onChange: null,
         toggleButton: false,
         checked: undefined,
         defaultChecked: undefined,
         disabled: false,
-        tooltip: null,
-        dangerouslySetLabel: null
+        dangerouslySetLabel: null,
+        stopPropagation: false
     };
 
     constructor() {
         super();
         this.id = Math.random();
-    }
-
-    componentDidMount() {
-        const { tooltip } = this.props;
-
-        if(tooltip) {
-            this._container.setAttribute('tooltip', tooltip);
-            window.chayns.ui.tooltip.init(null, this._container.parentNode);
-        }
     }
 
     onChange = () => {
@@ -59,9 +55,8 @@ export default class Checkbox extends React.Component {
         }
     };
 
-    render() {
+    renderCheckbox(classNames) {
         const {
-            className,
             style,
             disabled,
             children,
@@ -69,64 +64,88 @@ export default class Checkbox extends React.Component {
             checked,
             defaultChecked,
             dangerouslySetLabel,
+            labelStyle,
+            labelClassName,
+            stopPropagation
+        } = this.props;
+
+        return [
+            <input
+                key="input"
+                type="checkbox"
+                className={`checkbox ${classNames}`}
+                ref={(ref) => {
+                    this._node = ref;
+                }}
+                onClick={stopPropagation ? event => event.stopPropagation() : null}
+                onChange={this.onChange}
+                id={this.id}
+                disabled={disabled}
+                checked={checked}
+                defaultChecked={defaultChecked}
+                style={style}
+            />,
+            <label
+                key="label"
+                style={{ ...labelStyle, ...(!label && !dangerouslySetLabel && !children ? { display: 'inline' } : null) }}
+                className={labelClassName}
+                onClick={stopPropagation ? event => event.stopPropagation() : null}
+                htmlFor={this.id}
+                dangerouslySetInnerHTML={dangerouslySetLabel}
+            >
+                {!dangerouslySetLabel ? (children || label || '') : null}
+            </label>
+        ];
+    }
+
+    renderToggleButton(classNames) {
+        const {
+            style,
+            disabled,
+            children,
+            label,
+            checked,
+            defaultChecked,
+            dangerouslySetLabel,
+            labelStyle,
+            labelClassName,
+        } = this.props;
+
+        return [
+            <input
+                key="input"
+                type="checkbox"
+                className={`switch ${classNames}`}
+                ref={(ref) => {
+                    this._node = ref;
+                }}
+                onChange={this.onChange}
+                id={this.id}
+                disabled={disabled}
+                checked={checked}
+                defaultChecked={defaultChecked}
+                style={style}
+            />,
+            <label
+                key="label"
+                className={labelClassName}
+                htmlFor={this.id}
+                dangerouslySetInnerHTML={dangerouslySetLabel}
+                style={label ? { ...labelStyle, ...{ marginRight: '10px' } } : labelStyle}
+            />,
+            !dangerouslySetLabel ? (children || label || '') : null
+        ];
+    }
+
+    render() {
+        const {
+            className,
+            toggleButton,
         } = this.props;
         const classNames = classnames({
             [className]: className
         });
 
-        const checkbox = () => {
-            return(
-                <div
-                    style={style}
-                    className={classNames}
-                    ref={(ref) => { this._container = ref; }}
-                >
-                    <input
-                        type="checkbox"
-                        className="checkbox"
-                        ref={(ref) => { this._node = ref; }}
-                        onChange={this.onChange}
-                        id={this.id}
-                        disabled={disabled}
-                        checked={checked}
-                        defaultChecked={defaultChecked}
-                    />
-                    <label
-                        htmlFor={this.id}
-                        dangerouslySetInnerHTML={dangerouslySetLabel}
-                    >
-                        {!dangerouslySetLabel ? (children || label || '') : null}
-                    </label>
-                </div>
-            );
-        };
-
-        const toggleButton = () => {
-            return (
-                <div
-                    style={style}
-                    className={classNames}
-                    ref={(ref) => { this._container = ref; }}
-                >
-                    <input
-                        type="checkbox"
-                        className="switch"
-                        ref={(ref) => { this._node = ref; }}
-                        onChange={this.onChange}
-                        id={this.id}
-                        disabled={disabled}
-                        checked={checked}
-                        defaultChecked={defaultChecked}
-                    />
-                    <label
-                        htmlFor={this.id}
-                        style={label ? { marginRight: '10px' } : null}
-                    />
-                    {children || label || ''}
-                </div>
-            );
-        };
-
-        return this.props.toggleButton ? toggleButton() : checkbox();
+        return toggleButton ? this.renderToggleButton(classNames) : this.renderCheckbox(classNames);
     }
 }

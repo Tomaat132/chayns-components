@@ -1,10 +1,20 @@
+import { faFacebookF } from '@fortawesome/free-brands-svg-icons/faFacebookF';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons/faWhatsapp';
+import { faTwitter } from '@fortawesome/free-brands-svg-icons/faTwitter';
+import { faTumblr } from '@fortawesome/free-brands-svg-icons/faTumblr';
+import { faTelegram } from '@fortawesome/free-brands-svg-icons/faTelegram';
+import { faSkype } from '@fortawesome/free-brands-svg-icons/faSkype';
+import { faEnvelope } from '@fortawesome/free-regular-svg-icons/faEnvelope';
+import { faLink } from '@fortawesome/free-solid-svg-icons/faLink';
+import { faShareAlt } from '@fortawesome/free-solid-svg-icons/faShareAlt';
+
 export const shareProvider = [
     {
         id: 0,
         providerId: -1,
         name: 'Zwischenablage',
         androidIdentifier: null,
-        icon: 'fa-files-o',
+        icon: faLink,
         action: 0,
         url: null,
         available: false
@@ -14,7 +24,7 @@ export const shareProvider = [
         providerId: 0,
         name: 'Mail',
         androidIdentifier: null,
-        icon: 'fa-envelope',
+        icon: faEnvelope,
         action: 2,
         url: null,
         available: false
@@ -24,7 +34,7 @@ export const shareProvider = [
         providerId: 1,
         name: 'WhatsApp',
         androidIdentifier: 'com.whatsapp',
-        icon: 'fa-whatsapp',
+        icon: faWhatsapp,
         action: 1,
         url: null,
         available: false
@@ -34,19 +44,9 @@ export const shareProvider = [
         providerId: 2,
         name: 'Facebook',
         androidIdentifier: 'com.facebook.katana',
-        icon: 'fa-facebook-official',
+        icon: faFacebookF,
         action: 1,
         url: 'http://www.facebook.com/dialog/share?app_id=472449496108149&display=page&href={url}&redirect_uri=http://facebook.com',
-        available: true
-    },
-    {
-        id: 4,
-        providerId: 4,
-        name: 'GooglePlus',
-        androidIdentifier: 'com.google.android.apps.plus',
-        icon: 'fa-google-plus',
-        action: 1,
-        url: 'http://plus.google.com/share?url={url}',
         available: true
     },
     {
@@ -54,7 +54,7 @@ export const shareProvider = [
         providerId: 5,
         name: 'Twitter',
         androidIdentifier: null,
-        icon: 'fa-twitter',
+        icon: faTwitter,
         action: 1,
         url: 'http://twitter.com/intent/tweet?text=&url={url}&hashtags=chayns',
         available: true
@@ -64,7 +64,7 @@ export const shareProvider = [
         providerId: -1,
         name: 'Tumblr',
         androidIdentifier: 'com.tumblr',
-        icon: 'fa-tumblr-square',
+        icon: faTumblr,
         action: 1,
         url: '//tumblr.com/widgets/share/tool?canonicalUrl={url}',
         available: false
@@ -74,7 +74,7 @@ export const shareProvider = [
         providerId: -1,
         name: 'Telegram',
         androidIdentifier: 'org.telegram.messenger',
-        icon: 'fa-paper-plane',
+        icon: faTelegram,
         action: 1,
         url: null,
         available: false
@@ -94,7 +94,7 @@ export const shareProvider = [
         providerId: -1,
         name: 'Skype',
         androidIdentifier: 'com.skype.raider',
-        icon: 'fa-skype',
+        icon: faSkype,
         action: 2,
         url: null,
         available: false
@@ -104,17 +104,27 @@ export const shareProvider = [
         providerId: -1,
         name: 'Share',
         androidIdentifier: null,
-        icon: 'fa-share-alt',
+        icon: faShareAlt,
         action: 2,
         url: null,
         available: false
-    }
+    },
+    {
+        id: 11,
+        providerId: -1,
+        name: 'Share',
+        androidIdentifier: null,
+        icon: faShareAlt,
+        action: 3,
+        url: null,
+        available: false
+    },
 
 ];
 
 export const shareActions = {
     copyToClipboard: 0,
     shareWithUrl: 1,
-    shareWithApp: 2
+    shareWithApp: 2,
+    webShareApi: 3,
 };
-

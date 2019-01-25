@@ -17,7 +17,7 @@ export default {
         }[env],
         format: env
     },
-    external: ['react', 'classnames', 'prop-types', 'ract-dom', 'react-transition-group', 'emojione'],
+    external: ['react', 'classnames', 'prop-types', 'react-dom', 'react-transition-group', 'emojione','lodash.isequal', 'lodash.throttle', 'supports-webp'],
     plugins: [
         external(),
         autoExternal(),
@@ -27,7 +27,8 @@ export default {
         babel({
             exclude: 'node_modules/**',
             // if external helpers true then use global babel object
-            externalHelpers: true
+            externalHelpers: true,
+            runtimeHelpers: true
         }),
         commonjs(),
         filesize()

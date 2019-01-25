@@ -1,8 +1,9 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Button from '../../../src/react-chayns-button/component/Button';
 
-export default class Step2 extends React.Component {
+export default class Step2 extends Component {
     static contextTypes = {
         nextStep: PropTypes.func,
         stepComplete: PropTypes.func
@@ -24,6 +25,7 @@ export default class Step2 extends React.Component {
         return (
             <div className="accordion__content">
                 <p>
+
                     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
                     labore
                     et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
@@ -56,12 +58,9 @@ export default class Step2 extends React.Component {
                         }
                     }
                 >
-                    <div
-                        className="button"
-                        onClick={nextStep}
-                    >
+                    <Button onClick={nextStep}>
                         Next
-                    </div>
+                    </Button>
                 </div>
             </div>
         );

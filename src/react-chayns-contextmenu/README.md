@@ -1,65 +1,53 @@
-# ContextMenu - Component #
+# ContextMenu #
 
 The **ContextMenu** - Component is part of the **chayns-component** package. You can install the whole package with the following statement:
 
     npm install -S chayns-components@latest
 
-## Use ##
+
+## Usage ##
 
 First of all import the component to a component of your own project.
 
-```jsx
+```jsx harmony
 import { ContextMenu } from 'chayns-components';
-import 'chayns-components/lib/react-chayns-contextmenu/index.css';
 ```
-I would recommend to import this component to a high level component of your project, because with that you can use one **ContextMenu** component for your whole project and you can store the properties for the **ContextMenu** at one place.
 
 You can init your **ContextMenu** like this:
-```jsx
+
+```jsx harmony
 <ContextMenu
-    x={100}
-    y={100}
-    hide={false}
     items={[{
-        className: 'fa fa-plus',
+        icon: 'ts-tobit',
         onClick: this.addOnClick,
         text: 'Hinzufügen'
     }]}
-    onLayerClick={()=>console.log('hide')}
+    position={0}
 />
 ```
 
 
- **Important:** You will need a bundler for the component styles. If you are not familiar with things like webpack or gulp take a look at our [chayns-React-ES6 Template ][1]. The bundler **must** include the node modules, otherwise you will get an compatibility error.
+## Props ##
 
-
-
-### Props ###
 The component got the following properties:
 
 | Property   | Description                                                                                        | Type   | Default | Required
 |------------|-----------------------------------------------------------------------------------------------------|--------|-------|------|
-| x | The x-Position of the **ContextMenu**                                     | number |        | true |
-| y | The y-Position of the **ContextMenu**                                     | bool   |        | true |
+| coordinates           | Coordinates of the place to which the ContextMenu is rendered. Example: {x: 100, y: 100}                                  | object    |       |  |
 | hide | Defines wether the Component is hidden or not   | bool | true| |
-| onLayerClick | An Event which get triggered when the **ContextMenu** is shown and the User clicks on the Layer over the page | func | |
+| onLayerClick | An Event which get triggered when the **ContextMenu** is shown and the User clicks on the Layer over the page | func | ||
+| position | The position the ContextMenu (0 = top left, 1 = bottom left, 2 = bottom right, 3 = top right) | number | 0 ||
 | items | The Items which are displayed in the **ContextMenu** | array | |
 | item.className | The className of an item of the **ContextMenu** | string | |
-| item.onClick | The function, which gets triggered when the user clicks on a certain item in the **ContextMenu** | func | |
+| item.onClick | The function, which gets triggered when the user clicks on a certain item in the **ContextMenu** | func | ||
 | item.text | The text displayed in an item of the **ContextMenu** | string | |
+| item.icon | The icon displayed in an item of the **ContextMenu** | object/string | |
+| parent | DOM Node into which the **ContextMenu** will be rendered | node | tapp |
+| children | React Node, that the tooltip should refer to. It will always be rendered to your page. | node | ts-ellipsis_v-icon
+| childrenStyle | Style for the children node | object | 
 
+If you don't set coordinates or a children, the **ContextMenu** will render the `ts-ellipsis-v` icon as a trigger.
 
-#### Example ####
+## Example ##
 
 You can take a look at the **examples** folder in the **react-chayns-contextmenu** repository. There you can find an appropriate way of implementing the **ContextMenu** to your chayns-Tapp
-
-For starting the example you have to first install all dependencies...
-```
-npm i
-```
-... and the start the webpack-dev-server with the following command:
-```
-npm start
-```
-
-[1]:  https://github.com/TobitSoftware/chayns-template-es6-react

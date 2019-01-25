@@ -1,10 +1,10 @@
 /* eslint-disable */
 
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-export default class Groups extends React.Component{
+export default class Groups extends Component {
 
     static propTypes = {
         groups: PropTypes.array,
@@ -25,7 +25,7 @@ export default class Groups extends React.Component{
                         });
                         return (
                             <div className={className} key={group.id} onClick={(event)=>this.props.onClick(event,group)}>
-                                <div className="calendar__groups_color" style={{backgroundColor: group.color ? group.color : chayns.getSchemeColor()}}></div>
+                                <div className="calendar__groups_color" style={{backgroundColor: group.color ? group.color : chayns.env.site.color}}></div>
                                 {group.name}
                             </div>
                         )

@@ -1,70 +1,56 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import ChooseButton from '../../react-chayns-button/component/ChooseButton';
 
-export default class SelectButton extends React.Component {
+export default class SelectButton extends Component {
     static propTypes = {
         onSelect: PropTypes.func,
         title: PropTypes.string,
         description: PropTypes.string,
+        disabled: PropTypes.bool,
         label: PropTypes.string,
         list: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
-        listKey: PropTypes.string.isRequired,
-        listValue: PropTypes.string.isRequired,
+        listKey: PropTypes.string,
+        listValue: PropTypes.string,
         multiSelect: PropTypes.bool,
         quickFind: PropTypes.bool,
         className: PropTypes.string,
         showSelection: PropTypes.bool,
+        selectedFlag: PropTypes.string,
     };
 
     static defaultProps = {
         quickFind: false,
         multiSelect: false,
-        title: 'Select Dialog',
-        description: 'Please select an item',
+        title: '',
+        description: '',
         label: 'Select',
         showSelection: true,
         className: null,
         onSelect: null,
+        disabled: false,
+        listKey: 'name',
+        listValue: 'value',
+        selectedFlag: 'isSelected',
     };
-
-    static getDialogList(_list, listKey, listValue) {
-        const list = [];
-
-        if (_list) {
-            _list.map((item, i) => {
-                const curListKey = listKey || i;
-                if (item[curListKey] && item[listValue]) {
-                    list.push({ name: item[listValue], value: item[curListKey], isSelected: !!item.isSelected });
-                }
-            });
-        }
-
-        return list;
-    }
 
     constructor(props) {
         super(props);
         this.state = {
-            // eslint-disable-next-line react/no-unused-state
-            selected: []
+            selected: props.list.filter(item => item[props.selectedFlag]),
         };
 
         this.onClick = this.onClick.bind(this);
-        this.onSelect = this.onSelect.bind(this);
+        this.getDialogList = this.getDialogList.bind(this);
     }
 
-    onSelect(selected) {
-        const { onSelect } = this.props;
-        const { selection } = selected;
-
-        if(selection.length === 1) {
-            this.setLabel(selection[0].name);
-        }
-
-        if(onSelect) {
-            onSelect(this.getReturnList(selected));
+    componentWillReceiveProps(nextProps) {
+        const {
+            list, listKey, listValue, selectedFlag
+        } = this.props;
+        if (list !== nextProps.list || listKey !== nextProps.listKey || listValue !== nextProps.listValue || selectedFlag !== nextProps.selectedFlag) {
+            this.setState({ selected: nextProps.list.filter(item => item[nextProps.selectedFlag]) });
         }
     }
 
@@ -75,10 +61,9 @@ export default class SelectButton extends React.Component {
             title,
             description,
             list,
-            listKey,
-            listValue,
+            onSelect,
         } = this.props;
-        const _list = SelectButton.getDialogList(list, listKey, listValue);
+        const _list = this.getDialogList(list);
 
         chayns.dialog.select({
             title,
@@ -86,11 +71,35 @@ export default class SelectButton extends React.Component {
             quickfind: quickFind,
             multiselect: multiSelect,
             list: _list
-        }).then((selected) => {
-            this.onSelect(selected);
+        }).then((result) => {
+            if (onSelect && result.buttonType > 0) {
+                onSelect(this.getReturnList(result));
+            }
         }).catch((e) => {
+            // eslint-disable-next-line no-console
             console.error(e);
         });
+    }
+
+    getDialogList(_list) {
+        const { selected } = this.state;
+        const { showSelection, listKey, listValue } = this.props;
+        const list = [];
+
+        if (_list) {
+            _list.map((item, i) => {
+                const curListKey = listKey || i;
+                if (item[curListKey] && item[listValue]) {
+                    list.push({
+                        name: item[listValue],
+                        value: item[curListKey],
+                        isSelected: selected.indexOf(item) >= 0 && showSelection
+                    });
+                }
+            });
+        }
+
+        return list;
     }
 
     getReturnList(selected) {
@@ -103,30 +112,28 @@ export default class SelectButton extends React.Component {
                 if (listItem[listKey] === item.value) result.push(listItem);
             });
         });
+        this.setState({ selected: result });
         return { buttonType, selection: result };
     }
 
-    setLabel(text) {
-        if (this.props.showSelection) {
-            this._btn.innerText = text;
-        }
-    }
-
     render() {
-        const { className, label } = this.props;
-        const classNames = classnames({
-            choosebutton: true,
-            [className]: className
-        });
-
+        const {
+            className, label, disabled, listValue
+        } = this.props;
+        const { selected } = this.state;
         return (
-            <div
-                className={classNames}
+            <ChooseButton
+                className={className}
+                disabled={disabled}
                 onClick={this.onClick}
-                ref={(ref) => { this._btn = ref; }}
             >
-                {label}
-            </div>
+                {selected && selected.length > 0 ? selected.map((item, index) => {
+                    let str = (index === 1) ? ', ' : '';
+                    str += (index < 2) ? item[listValue] : '';
+                    str += (index === 2) ? '...' : '';
+                    return str;
+                }) : label}
+            </ChooseButton>
         );
     }
 }

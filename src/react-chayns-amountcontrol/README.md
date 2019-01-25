@@ -1,4 +1,4 @@
-# AmountControl-Component #
+# AmountControl #
 
 The AmountControl-Component is part of the *chayns-components*-Package. You can install it with the following command:
 
@@ -6,23 +6,15 @@ The AmountControl-Component is part of the *chayns-components*-Package. You can 
 
 
 ## Usage ##
+
 You have to import the components and styles first:
 
-```jsx
+```jsx harmony
 import { AmountControl } from 'chayns-components';
-import 'chayns-components/lib/react-chayns-amountcontrol/index.css';
 ```
-
-If you want to use the shopStyle-prop you have to import an other css
-(it's a drop-in for index.css to reduce bundle-sizes):
-``` jsx
--- import 'chayns-components/lib/react-chayns-amountcontrol/index.css';
-++ import 'chayns-components/lib/react-chayns-amountcontrol/shop.css';
-```
-
 
 You can now use the components as followed:
-```jsx
+```jsx harmony
 <AmountControl
     amount={1}
     onChange={console.log}
@@ -31,7 +23,7 @@ You can now use the components as followed:
 ```
 
 
-### Props ###
+## Props ##
 You can set the following props on a AmountControl element:
 
 | Property      | Description                                                                             | Type     | Default |
@@ -50,13 +42,22 @@ You can set the following props on a AmountControl element:
 | autoInput     | Shows an input at amount >= 10                                                          | bool     | false   |
 | showInput     | Shows the input as long the buttons are not disabled                                    | bool     | false   |
 | buttonFormatHandler | A function that should return the button-content                                  | func     |         |
-| shopStyle     | Enables the shop-styles for this element                                                | bool     | false   |
+| icon          | The icon shown on the left side of the button                                           | string/object   |         |
+| iconColor     | Color of the icon                                                                       | string   |         |
+| addColor      | Color of the add-icon                                                                   | string   |         |
+| removeColor   | Color of the remove-icon                                                                | string   |         |
+| focusOnClick  | Enables the input autoFocus                                                             | bool     | true    |
+
+The shopStyle property is deprecated and will no longer be supported. You can get the shopStyle by setting the 
+icon-, iconColor-, addColor-, removeColor- and focusOnClick-properties. 
 
 
 ### Examples ###
+
+
 #### basic ####
 Because the amount-prop works like value and not like defaultValue you have to use a state:
-```jsx
+```jsx harmony
 export default class Example extends React.Component {
     constructor() {
         super();
@@ -89,7 +90,7 @@ export default class Example extends React.Component {
 #### equalize ####
 When you use multiple AmountControls that are near to each other. It maybe looks better, if they have the same size.
 The following example exactly does that:
-```jsx
+```jsx harmony
 <div data-equalize="group-1">
     <AmountControl
         equalize="group-1"
@@ -115,7 +116,7 @@ The following example exactly does that:
 #### buttonFormatHandler ####
 When you use a buttonFormatHandler you could specify the content of the button.
 You should disable the input, when using it.
-```jsx
+```jsx harmony
 <AmountControl
     amount={1}
     buttonFormatHandler={({ amount }) => `${amount} h`}
@@ -124,10 +125,19 @@ You should disable the input, when using it.
 ```
 
 #### shopStyle ####
-You could add the shopStyle-prop to display the component like in the microshop™.
-```jsx
+You could add these props to display the component like in the microshop™.
+```jsx harmony
 <AmountControl
     amount={1}
-    shopStyle
+    addColor="#20C65A"
+    removeColor="#E71E28"
+    iconColor="#20C65A"
+    focusOnClick={false}
+    icon="fa-shopping-cart"
 />
 ```
+
+
+### More Examples ###
+
+You can take a look at the **examples** folder in the **react-chayns-amountcontrol** repository. There you can find an appropriate way of implementing the **AmountControl** to your chayns-Tapp.

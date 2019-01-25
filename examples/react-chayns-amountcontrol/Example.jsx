@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { Component } from 'react';
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 import { AmountControl } from '../../src/index';
-import '../../src/react-chayns-amountcontrol/shop.scss';
 import ExampleContainer from '../ExampleContainer';
 import Accordion from '../../src/react-chayns-accordion/component/Accordion';
 
-export default class Example extends React.Component {
+export default class Example extends Component {
     constructor() {
         super();
 
         this.state = {
-            amount: 1
+            amount: 0
         };
     }
 
@@ -23,9 +23,9 @@ export default class Example extends React.Component {
     render() {
         const { amount } = this.state;
 
-        return(
+        return (
             <ExampleContainer
-                headline="AmountControl Example"
+                headline="AmountControl"
                 data-equalize="group-1"
             >
                 <AmountControl
@@ -35,20 +35,25 @@ export default class Example extends React.Component {
                     onChange={this.onChange}
                     equalize="group-1"
                     buttonText="0,15"
-                    shopStyle
+                    addColor="#20C65A"
+                    removeColor="#E71E28"
+                    iconColor="#20C65A"
+                    focusOnClick={false}
+                    icon={faShoppingCart}
                 />
 
-                <br />
+                <br/>
 
                 <AmountControl
                     disabled={false}
                     amount={amount}
                     onChange={this.onChange}
-                    equalize="group-1"
+                    contentWidth={200}
                     buttonText="mtl. 15,95 €"
+                    icon="ts-tobit"
                 />
 
-                <br />
+                <br/>
 
                 <AmountControl
                     disabled
@@ -58,21 +63,29 @@ export default class Example extends React.Component {
                     buttonText="test-article"
                 />
 
-                <br />
+                <br/>
 
-                <Accordion head={
-                    <AmountControl
-                        disabled={false}
-                        amount={amount}
-                        onChange={this.onChange}
-                        equalize="group-1"
-                        buttonText="0,15"
-                    />}
+                <Accordion
+                    right={(
+                        <AmountControl
+                            className="accordion--no-trigger"
+                            icon="ts-bamboo"
+                            disabled={false}
+                            amount={amount}
+                            onChange={this.onChange}
+                            equalize="group-1"
+                            buttonText="2,20€"
+                            iconColor="blue"
+                        />
+                    )}
+                    head="Afri Cola"
                 >
+
+
                     Test
                 </Accordion>
 
-                <br />
+                <br/>
 
                 <AmountControl
                     amount={amount}
@@ -82,8 +95,7 @@ export default class Example extends React.Component {
                     disableInput
                 />
 
-                <br />
-
+                <br/>
 
                 <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
                     <AmountControl
@@ -119,7 +131,7 @@ export default class Example extends React.Component {
                     disableInput
                 />
 
-                <br />
+                <br/>
 
                 <AmountControl
                     amount={amount}
@@ -134,9 +146,7 @@ export default class Example extends React.Component {
                         disabled={false}
                         amount={amount}
                         onChange={this.onChange}
-                        equalize="group-1"
                         buttonText="0,15"
-                        shopStyle
                     />
                 </div>
 

@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import loadOptionalDependency from '../../utils/loadOptionalDependency';
 
 function requireEmojione(returnPromise) {
     return loadOptionalDependency('emojione', 'emojione', [
-        'https://cdn.jsdelivr.net/npm/emojione@3.1.2/lib/js/emojione.min.js'
+        'https://cdn.jsdelivr.net/npm/emojione@3.1.7/lib/js/emojione.min.js'
     ], [
-        'https://cdn.jsdelivr.net/npm/emojione@3.1.2/extras/css/emojione.min.css'
+        'https://cdn.jsdelivr.net/npm/emojione@3.1.7/extras/css/emojione.min.css'
     ], returnPromise);
 }
 
-export default class EmojiInput extends React.Component {
+export default class EmojiInput extends Component {
     static propTypes = {
         placeholder: PropTypes.string.isRequired,
         onInput: PropTypes.func.isRequired,
@@ -20,6 +20,7 @@ export default class EmojiInput extends React.Component {
         hideBorder: PropTypes.bool,
         onKeyDown: PropTypes.func,
         disabled: PropTypes.bool,
+        style: PropTypes.object,
         onFocus: PropTypes.func,
         onBlur: PropTypes.func
     };
@@ -29,8 +30,49 @@ export default class EmojiInput extends React.Component {
         onKeyDown: null,
         disabled: false,
         onFocus: null,
-        onBlur: null
+        onBlur: null,
+        style: null
     };
+
+    lastKeyPressed = null;
+
+    firstRender = true;
+
+    activeNode = 0;
+
+    cursorPos = 0;
+
+    componentWillMount() {
+        requireEmojione().then((emojione) => {
+            emojione.ascii = true; // eslint-disable-line no-param-reassign
+            emojione.imageTitleTag = false; // eslint-disable-line no-param-reassign
+            emojione.blacklistChars = '*,#'; // eslint-disable-line no-param-reassign
+            emojione.imagePathPNG = 'https://sub54.tobit.com/frontend/assets/emojione/3.1/png/64/'; // eslint-disable-line no-param-reassign
+        });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const { placeholder, disabled, value } = this.props;
+
+        if (nextProps.value.trim() === '') {
+            this.placeholder.classList.remove('emoji-input__placeholder--hidden');
+        } else {
+            this.placeholder.classList.add('emoji-input__placeholder--hidden');
+        }
+
+        if (nextProps.placeholder !== placeholder) {
+            this.placeholder.innerText = nextProps.placeholder;
+        }
+
+        if (nextProps.disabled !== disabled) {
+            this.input.contentEditable = !nextProps.disabled;
+        }
+
+        if (nextProps.value !== value || this.firstRender) {
+            this.updateDOM(nextProps);
+            this.firstRender = false;
+        }
+    }
 
     static shouldComponentUpdate() {
         return false;
@@ -61,37 +103,6 @@ export default class EmojiInput extends React.Component {
             }
         }
         return caretOffset;
-    }
-
-    componentWillMount() {
-        requireEmojione().then((emojione) => {
-            emojione.ascii = true; // eslint-disable-line no-param-reassign
-            emojione.imageTitleTag = false; // eslint-disable-line no-param-reassign
-            emojione.imagePathPNG = 'https://sub54.tobit.com/frontend/assets/emojione/3.1/png/32/'; // eslint-disable-line no-param-reassign
-        });
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const { placeholder, disabled, value } = this.props;
-
-        if (nextProps.value.trim() === '') {
-            this.placeholder.classList.remove('invisible');
-        } else {
-            this.placeholder.classList.add('invisible');
-        }
-
-        if (nextProps.placeholder !== placeholder) {
-            this.placeholder.innerText = nextProps.placeholder;
-        }
-
-        if (nextProps.disabled !== disabled) {
-            this.input.contentEditable = !nextProps.disabled;
-        }
-
-        if (nextProps.value !== value || this.firstRender) {
-            this.updateDOM(nextProps);
-            this.firstRender = false;
-        }
     }
 
     getActiveChildNode = () => {
@@ -347,25 +358,27 @@ export default class EmojiInput extends React.Component {
         }
     };
 
-    lastKeyPressed = null;
-    firstRender = true;
-    activeNode = 0;
-    cursorPos = 0;
-
     render() {
-        const { id, hideBorder, disabled } = this.props;
+        const {
+            hideBorder,
+            disabled,
+            style,
+            id,
+        } = this.props;
 
-        const messageInputClasses = classNames('message--input', {
-            'input--disabled': disabled,
-            'hide--border': hideBorder,
+        const messageInputClasses = classNames('emoji-input__message-input', {
+            'emoji-input__message-input--hide-border': hideBorder,
+            'emoji-input__message-input--disabled': disabled,
             input: !disabled
         });
 
         return (
-            <div className="message--input--box">
+            <div className="emoji-input notranslate">
                 <div
                     dangerouslySetInnerHTML={{ __html: '<br />' }}
-                    ref={(ref) => { this.input = ref; }}
+                    ref={(ref) => {
+                        this.input = ref;
+                    }}
                     className={messageInputClasses}
                     onKeyDown={this.handleKeyDown}
                     contentEditable={!disabled}
@@ -373,12 +386,15 @@ export default class EmojiInput extends React.Component {
                     onInput={this.handleInput}
                     onFocus={this.handleFocus}
                     onBlur={this.handleBlur}
+                    style={style}
                     dir="auto"
                     id={id}
                 />
                 <div
-                    className="input--placeholder"
-                    ref={(ref) => { this.placeholder = ref; }}
+                    className="emoji-input__placeholder"
+                    ref={(ref) => {
+                        this.placeholder = ref;
+                    }}
                 />
             </div>
         );

@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 import ExampleContainer from '../ExampleContainer';
 import { SelectList, SelectListItem } from '../../src/index';
-import '../../src/react-chayns-selectlist/index.scss';
 
-export default class Example extends React.Component {
+export default class Example extends Component {
     state = {
         selectedId: 1
     };
@@ -40,8 +39,8 @@ export default class Example extends React.Component {
                     selectFirst
                     // value={this.state.selectedId}
                     className="hello world"
-                    onChange={(value) => {
-                        console.log('change selectlist', value);
+                    onChange={(id, value) => {
+                        console.log('change selectlist', { id, value });
                     }}
                 >
                     {
@@ -57,8 +56,9 @@ export default class Example extends React.Component {
                                     name="Hi"
                                     id={index}
                                     key={index}
-                                    {...others}
+                                    value={{ doubleIndex: index * 2 }}
                                     className="Hi"
+                                    {...others}
                                 >
                                     {element}
                                 </SelectListItem>

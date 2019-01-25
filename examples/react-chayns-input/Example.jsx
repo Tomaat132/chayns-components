@@ -1,44 +1,122 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
+import { faCoffee } from '@fortawesome/free-solid-svg-icons';
 
 import { Input } from '../../src/index';
 import ExampleContainer from '../ExampleContainer';
 
-export default class Example extends React.Component {
-    constructor() {
-        super();
+export default class Example extends PureComponent {
+    onBlur(value, valid) {
+        console.log('onBlur', value, valid);
+    }
 
-        this.state = {
-            userNameOnBlur: null,
-            userNameOnChange: null,
-        };
+    onChange(value, valid) {
+        console.log('onChange', value, valid);
+    }
+
+    onEnter(value, valid) {
+        console.log('onEnter', value, valid);
+    }
+
+    onKeyUp(e) {
+        console.log('onKeyUp', e);
     }
 
     render() {
-        const { userNameOnBlur, userNameOnChange } = this.state;
         return (
             <ExampleContainer headline="Input">
-                <h3>userNameOnBlur</h3>
-                <p>{userNameOnBlur || '-'}</p>
-
-                <h3>userNameOnChange</h3>
-                <p>{userNameOnChange || '-'}</p>
-
                 <Input
-                    defaultValue="heello i am a invalid default value"
-                    placeholder="Looking for 3 lowercase e's in a row"
-                    // regExp=".*e{3}.*"
-                    onBlur={(text) => {
-                        this.setState({
-                            userNameOnBlur: text
-                        });
+                    defaultValue="Input"
+                    placeholder="input"
+                    onBlur={this.onBlur}
+                    onChange={this.onChange}
+                    onKeyUp={this.onKeyUp}
+                    onEnter={this.onEnter}
+                    style={{
+                        width: '100%',
+                        marginBottom: '20px'
                     }}
-                    onChange={(text) => {
-                        this.setState({
-                            userNameOnChange: text
-                        });
-                    }}
-                    responsive={false}
                 />
+                <Input
+                    placeholder="password"
+                    type="password"
+                    onBlur={this.onBlur}
+                    onChange={this.onChange}
+                    onKeyUp={this.onKeyUp}
+                    onEnter={this.onEnter}
+                    style={{
+                        width: '100%',
+                        marginBottom: '20px'
+                    }}
+                />
+                <Input
+                    placeholder="invalid input"
+                    invalid
+                    onBlur={this.onBlur}
+                    onChange={this.onChange}
+                    onKeyUp={this.onKeyUp}
+                    onEnter={this.onEnter}
+                    style={{
+                        width: '100%',
+                        marginBottom: '20px'
+                    }}
+                />
+                <Input
+                    placeholder='type "eee"'
+                    regExp={new RegExp('.*e{3}.*')}
+                    onBlur={this.onBlur}
+                    onChange={this.onChange}
+                    onKeyUp={this.onKeyUp}
+                    onEnter={this.onEnter}
+                    style={{
+                        width: '100%',
+                        marginBottom: '20px'
+                    }}
+                />
+                <div style={{ marginBottom: '20px' }}>
+                    <Input
+                        defaultValue="Dynamic Input"
+                        placeholder="Dynamic Input Placeholder"
+                        style={{
+                            width: '100%'
+                        }}
+                        onBlur={this.onBlur}
+                        onChange={this.onChange}
+                        onKeyUp={this.onKeyUp}
+                        onEnter={this.onEnter}
+                        dynamic
+                    />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                    <Input
+                        placeholder="Icon"
+                        icon="ts-tobit2016"
+                        style={{
+                            width: '100%'
+                        }}
+                        onBlur={this.onBlur}
+                        onChange={this.onChange}
+                        onKeyUp={this.onKeyUp}
+                        onEnter={this.onEnter}
+                        dynamic
+                    />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                    <Input
+                        placeholder='type "eee"'
+                        regExp={new RegExp('.*e{3}.*')}
+                        onBlur={this.onBlur}
+                        onChange={this.onChange}
+                        onKeyUp={this.onKeyUp}
+                        onEnter={this.onEnter}
+                        icon={faCoffee}
+                        style={{
+                            width: '100%'
+                        }}
+                        noDeleteIcon
+                        onIconClick={console.log}
+                        dynamic
+                    />
+                </div>
             </ExampleContainer>
         );
     }

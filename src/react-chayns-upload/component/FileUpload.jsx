@@ -2,13 +2,24 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
+
 import selectFile from '../../utils/selectFile';
 import getCompareFunction from '../utils/getCompareFunction';
 import getMimeTypes from '../utils/getMimeTypes';
 import uploadCloudImages from '../utils/uploadCloudImage';
 import normalizeUploadResponse from '../utils/normalizeUploadResponse';
+import Icon from '../../react-chayns-icon/component/Icon';
 
 export default class FileUpload extends Component {
+    static TYPE_IMAGE = 'image';
+
+    static TYPE_VIDEO = 'video';
+
+    static TYPE_AUDIO = 'audio';
+
+    static TYPE_ALL = 'all';
+
     static propTypes = {
         type: PropTypes.oneOf(['image', 'video', 'audio', 'all']),
         multiple: PropTypes.bool,
@@ -18,12 +29,12 @@ export default class FileUpload extends Component {
             PropTypes.node,
             PropTypes.arrayOf(PropTypes.node),
         ]),
-        upload: PropTypes.bool,
         uploadText: PropTypes.string,
         onUpload: PropTypes.func,
         disableListeners: PropTypes.bool,
         onClick: PropTypes.func,
         onDrop: PropTypes.func,
+        customIcon: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     };
 
     static defaultProps = {
@@ -31,32 +42,14 @@ export default class FileUpload extends Component {
         multiple: true,
         onChange: null,
         className: '',
-        upload: false,
         children: null,
         uploadText: null,
         onUpload: null,
         disableListeners: false,
         onClick: null,
         onDrop: null,
+        customIcon: null,
     };
-
-    static TYPE_IMAGE = 'image';
-    static TYPE_VIDEO = 'video';
-    static TYPE_AUDIO = 'audio';
-    static TYPE_ALL = 'all';
-
-    static getText(type) {
-        switch (type) {
-            case 'image':
-                return 'Bild hochladen';
-            case 'video':
-                return 'Video hochladen';
-            case 'audio':
-                return 'Song hochladen';
-            default:
-                return 'Datei hochladen';
-        }
-    }
 
     constructor() {
         super();
@@ -75,47 +68,41 @@ export default class FileUpload extends Component {
         const {
             type,
             multiple,
-            upload,
             onUpload,
             onClick
         } = this.props;
 
         if (onClick) {
             return onClick(event);
-        } else if (onClick === false) {
+        }
+
+        if (onClick === false) {
             return false;
         }
 
-        if (upload && onUpload && type === FileUpload.TYPE_IMAGE) {
-            return chayns.uploadCloudImage().then((data) => {
-                if(!data.response || data.response.statusCode !== 200 || !data.response.data) {
-                    return null;
-                }
-
-                try {
-                    const responseData = JSON.parse(data.response.data);
-                    return normalizeUploadResponse(responseData);
-                } catch (ex) {
-                    return null;
-                }
-            }).then((uploadData) => {
-                onUpload(uploadData);
-            });
+        if (onUpload && type === FileUpload.TYPE_IMAGE) {
+            if (chayns.env.user.isAuthenticated) {
+                return chayns.uploadCloudImage()
+                    .then((uploadData) => {
+                        onUpload(uploadData.url);
+                    });
+            }
+            return chayns.login();
         }
 
         return selectFile({
             type: getMimeTypes(type),
             multiple,
-        }).then((files) => {
-            const fileList = !multiple ? [files] : files;
-            this.checkFiles(fileList);
-        });
+        })
+            .then((files) => {
+                const fileList = !multiple ? [files] : files;
+                this.checkFiles(fileList);
+            });
     }
 
     onDrop(event) {
         const {
             onChange,
-            upload,
             onUpload,
             type,
             onDrop
@@ -123,7 +110,9 @@ export default class FileUpload extends Component {
 
         if (onDrop) {
             return onDrop(event);
-        } else if (onDrop === false) {
+        }
+
+        if (onDrop === false) {
             return false;
         }
 
@@ -136,11 +125,15 @@ export default class FileUpload extends Component {
 
         const { files } = event.dataTransfer;
 
-        if (upload && onUpload && type === FileUpload.TYPE_IMAGE) {
-            return uploadCloudImages(files).then((data) => {
-                const uploadData = normalizeUploadResponse(data);
-                onUpload(uploadData);
-            });
+        if (onUpload && type === FileUpload.TYPE_IMAGE) {
+            if (chayns.env.user.isAuthenticated) {
+                return uploadCloudImages(files)
+                    .then((data) => {
+                        const uploadData = normalizeUploadResponse(data);
+                        onUpload(uploadData[0].url);
+                    });
+            }
+            return chayns.login();
         }
 
         if (onChange) {
@@ -166,6 +159,19 @@ export default class FileUpload extends Component {
         this.setState({
             hover: false,
         });
+    }
+
+    static getText(type) {
+        switch (type) {
+            case 'image':
+                return 'Bild hochladen';
+            case 'video':
+                return 'Video hochladen';
+            case 'audio':
+                return 'Song hochladen';
+            default:
+                return 'Datei hochladen';
+        }
     }
 
     checkFiles(files) {
@@ -197,27 +203,30 @@ export default class FileUpload extends Component {
             type,
             className,
             uploadText,
+            customIcon,
         } = this.props;
         const { hover } = this.state;
 
         const classNames = classnames('cc__file-upload--placeholder', {
-            'chayns__color--70': chayns.env.site.colorMode !== 1,
-            'cc__file-upload--image': (type === 'image'),
-            'cc__file-upload--audio': (type === 'audio'),
-            'cc__file-upload--video': (type === 'video'),
-            'cc__file-upload--documents': (!type || type === 'all'),
+            chayns__color: chayns.env.site.colorMode !== 1,
             'cc__file-upload--hover': hover,
             [className]: className,
         });
+
+        let icon;
+        if (customIcon) {
+            icon = customIcon;
+        } else {
+            icon = faUpload;
+        }
 
         return (
             <div
                 className={classNames}
             >
-                <i
-                    className="cc__file-upload__icon"
-                    aria-hidden="true"
-                />
+                <span className="cc__file-upload__icon">
+                    <Icon icon={icon}/>
+                </span>
                 <div
                     className="cc__file-upload__message"
                 >
@@ -233,7 +242,7 @@ export default class FileUpload extends Component {
             disableListeners,
         } = this.props;
 
-        const wrapperClassNames = classnames('cc__file-upload', {
+        const wrapperClassNames = classnames('cc__file-upload chayns__border-color', {
             'cc__file-upload--custom': children,
         });
 

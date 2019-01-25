@@ -1,76 +1,134 @@
-import React from 'react';
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import requestAnimationFrame from '../../utils/requestAnimationFrame';
+import Icon from '../../react-chayns-icon/component/Icon';
+import AccordionSearch from './AccordionSearch';
 
-const CLOSED = 5;
 const CLOSE = 1;
 
-const OPENED = 6;
 const OPEN = 2;
 
-function hasFlag(value, flag) {
-    return !!(value & flag); // eslint-disable-line no-bitwise
-}
+let rqAnimationFrame;
 
-class Accordion extends React.Component {
+export default class Accordion extends PureComponent {
+    static propTypes = {
+        head: PropTypes.oneOfType([
+            PropTypes.node.isRequired,
+            PropTypes.shape({
+                open: PropTypes.node.isRequired,
+                close: PropTypes.node.isRequired
+            }).isRequired
+        ]).isRequired,
+        children: PropTypes.node.isRequired,
+        right: PropTypes.node,
+        renderClosed: PropTypes.bool,
+        isWrapped: PropTypes.bool,
+        dataGroup: PropTypes.string,
+        className: PropTypes.string,
+        id: PropTypes.string,
+        style: PropTypes.object,
+        styleBody: PropTypes.object,
+        onOpen: PropTypes.func,
+        onClose: PropTypes.func,
+        defaultOpened: PropTypes.bool,
+        reference: PropTypes.func,
+        autogrow: PropTypes.bool,
+        open: PropTypes.bool,
+        icon: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.node]),
+        noRotate: PropTypes.bool,
+        fixed: PropTypes.bool,
+        noIcon: PropTypes.bool,
+        onSearch: PropTypes.func,
+        onSearchEnter: PropTypes.func,
+        searchPlaceholder: PropTypes.string,
+        removeContentClosed: PropTypes.bool,
+        onClick: PropTypes.func,
+    };
+
+    static defaultProps = {
+        className: '',
+        dataGroup: null,
+        id: null,
+        style: null,
+        styleBody: null,
+        onOpen: null,
+        onClose: null,
+        defaultOpened: null,
+        reference: null,
+        isWrapped: false,
+        renderClosed: false,
+        right: null,
+        autogrow: false,
+        open: undefined,
+        icon: 'ts-angle-right',
+        noRotate: false,
+        fixed: false,
+        noIcon: false,
+        onSearch: null,
+        onSearchEnter: null,
+        searchPlaceholder: '',
+        removeContentClosed: false,
+        onClick: null,
+    };
+
+    static dataGroups = {};
+
     constructor(props) {
+        const { defaultOpened, open, className } = props;
         super();
 
-        this.firstRender = true;
-
         this.state = {
-            currentState: (props && props.defaultOpened) ? OPENED : CLOSED,
+            currentState: (props && defaultOpened) || (open || (className && className.indexOf('accordion--open') !== -1)) ? OPEN : CLOSE,
         };
     }
 
-    componentWillMount() {
-        const { open, className } = this.props;
-
-        if (open || (className && className.indexOf('accordion--open') !== -1)) {
-            this.setState({
-                currentState: OPENED
-            });
-        }
-    }
-
     componentDidMount() {
-        const { className, autogrow } = this.props;
+        const { className, autogrow, dataGroup } = this.props;
         const { currentState } = this.state;
-
-        this.accordion.addEventListener('closed', this.accordionClosedListener.bind(this));
-        this.accordion.addEventListener('close', this.accordionCloseListener.bind(this));
-        this.accordion.addEventListener('open', this.accordionOpenListener.bind(this));
-        this.accordion.addEventListener('opened', this.accordionOpenedListener.bind(this));
 
         if (className.indexOf('accordion--open') !== -1) {
             this.accordion.classList.add('accordion--open');
         }
 
-        if (currentState === OPENED) {
-            if(autogrow && this._body) {
+        if (currentState === OPEN) {
+            if (autogrow && this._body) {
                 this._body.style.setProperty('max-height', 'initial', 'important');
             }
+        }
+
+        if (dataGroup) {
+            if (!Accordion.dataGroups[dataGroup]) {
+                Accordion.dataGroups[dataGroup] = [];
+            }
+
+            Accordion.dataGroups[dataGroup].push(this);
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if(nextProps.open !== undefined) {
-            if (this.props.open !== nextProps.open) {
-                this.setState({
-                    currentState: nextProps.open ? OPENED : CLOSED
-                });
+        if (nextProps.open !== undefined) {
+            const { open } = this.props;
+            const { currentState } = this.state;
+
+            if (open !== nextProps.open) {
+                if (nextProps.open) {
+                    this.accordionOpenListener();
+                } else {
+                    this.setState({
+                        currentState: CLOSE
+                    });
+                }
             }
 
-            if (nextProps.open && !hasFlag(this.state.currentState, OPEN)) {
-                this.setState({
-                    currentState: OPENED
-                });
+            if (nextProps.open && !currentState === !!OPEN) {
+                this.accordionOpenListener();
             }
 
-            if (!nextProps.open && !hasFlag(this.state.currentState, CLOSE)) {
+            if (!nextProps.open && !currentState === !!CLOSE) {
                 this.setState({
-                    currentState: CLOSED
+                    currentState: CLOSE
                 });
             }
         }
@@ -79,105 +137,116 @@ class Accordion extends React.Component {
     componentDidUpdate() {
         const { autogrow } = this.props;
         const { currentState } = this.state;
+        const { _body } = this;
 
-        if(autogrow && this._body) {
-            if(currentState === OPENED) {
-                this._body.style.setProperty('max-height', 'initial', 'important');
-            } else if(hasFlag(currentState, CLOSE)) {
-                this._body.style.maxHeight = null;
+        if (autogrow && _body) {
+            if (currentState === OPEN) {
+                _body.style.setProperty('max-height', 'initial', 'important');
+            } else if (currentState === CLOSE) {
+                _body.style.maxHeight = null;
             }
         }
     }
 
+    componentWillUnmount() {
+        const { dataGroup } = this.props;
+
+        if (dataGroup && Accordion.dataGroups[dataGroup]) {
+            const elementIndex = Accordion.dataGroups[dataGroup].indexOf(this);
+            if (elementIndex !== -1) {
+                Accordion.dataGroups[dataGroup].splice(elementIndex, 1);
+            }
+        }
+
+        cancelAnimationFrame(rqAnimationFrame);
+    }
+
+    handleAccordionClick = (event) => {
+        const { fixed, onClick } = this.props;
+
+        if (!fixed && event !== null) {
+            let trigger = true;
+            let node = event.target;
+            for (let i = 0; i < 15; i += 1) { // look for up to 15 parent nodes
+                if (node.classList) {
+                    if (node.classList.contains('accordion--no-trigger')) {
+                        trigger = false;
+                        break;
+                    }
+                    if (node.classList.contains('accordion__head')) {
+                        break;
+                    }
+                }
+                if (node.parentNode) {
+                    node = node.parentNode;
+                } else {
+                    trigger = false; // no parent node and no break at accordion__head -> portal (e.g. contextMenu) -> no trigger
+                    break;
+                }
+            }
+
+            if (trigger) {
+                const { currentState } = this.state;
+                const { dataGroup } = this.props;
+
+                if ((!dataGroup && currentState === OPEN) || this.accordion.classList.contains('accordion--open')) {
+                    this.accordionCloseListener(event);
+                } else {
+                    this.accordionOpenListener(event);
+                }
+            }
+        }
+
+        if (onClick) {
+            onClick(event);
+        }
+    };
+
+
     _getBody() {
-        const { renderClosed, children } = this.props;
+        const { renderClosed, children, removeContentClosed } = this.props;
         const { currentState } = this.state;
 
-        if (hasFlag(currentState, OPEN) || currentState === CLOSE || renderClosed) {
+        if (currentState === OPEN || renderClosed || (this.rendered && !removeContentClosed)) {
+            this.rendered = true;
             return children;
         }
 
         return null;
     }
 
-    _renderHead() {
-        const {
-            badge,
-            badgeStyle,
-            right,
-            head,
-        } = this.props;
-
-        if (!badge && !right) {
-            return head;
-        }
-
-        return [
-            <span
-                key="head"
-                className="accordion--trigger"
-            >
-                { head }
-            </span>,
-            <div
-                key="right"
-                className="right"
-                style={{
-                    display: 'flex',
-                    flexDirection: 'row'
-                }}
-            >
-                {right}
-                {badge && (
-                    <div
-                        key="badge"
-                        className="badge accordion--trigger"
-                        style={badgeStyle}
-                    >
-                        {badge}
-                    </div>
-                )}
-            </div>
-        ];
-    }
-
-    accordionClosedListener(event) {
-        const { onClosed } = this.props;
-
-        this.setState({
-            currentState: CLOSED
-        });
-
-        if (onClosed) {
-            onClosed(event);
-        }
-    }
-
     accordionCloseListener(event) {
         const { onClose, autogrow } = this.props;
+        const { _body } = this;
 
-        if (autogrow && this._body) {
-            this._body.style.setProperty('max-height', '9999px', 'important');
+        if (autogrow && _body) {
+            _body.style.setProperty('max-height', '9999px', 'important');
         }
 
-        requestAnimationFrame(() => {
+        rqAnimationFrame = requestAnimationFrame(() => {
             this.setState({
                 currentState: CLOSE
             });
 
-            this._body.style.removeProperty('max-height');
+            if (autogrow && _body) {
+                _body.style.removeProperty('max-height');
+            }
         });
 
         if (onClose) {
             onClose(event);
         }
-
-        this.firstRender = false;
     }
 
     accordionOpenListener(event) {
-        const { onOpen } = this.props;
-
+        const { onOpen, dataGroup } = this.props;
+        if (dataGroup && Accordion.dataGroups[dataGroup]) {
+            Accordion.dataGroups[dataGroup].forEach((accordion) => {
+                if (accordion !== this && accordion.state && accordion.state.currentState === OPEN) {
+                    accordion.accordionCloseListener();
+                }
+            });
+        }
         this.setState({
             currentState: OPEN
         });
@@ -187,94 +256,106 @@ class Accordion extends React.Component {
         }
     }
 
-    accordionOpenedListener(event) {
-        const { onOpened } = this.props;
-
-        this.setState({
-            currentState: OPENED
-        });
-
-        if (onOpened) {
-            onOpened(event);
-        }
-    }
-
     render() {
         const {
-            dataGroup,
             id,
             style,
             isWrapped,
             className,
-            ellipsis,
             styleBody,
             reference,
-            open,
-            badge,
-            badgeStyle,
-            right,
+            icon,
             head,
-            defaultOpened,
-            children,
-            autogrow,
-            renderClosed,
-            onOpen,
-            onOpened,
-            onClose,
-            onClosed,
-            ...customProps
+            right,
+            noRotate,
+            noIcon,
+            onSearch,
+            onSearchEnter,
+            searchPlaceholder
         } = this.props;
 
-        const others = {};
-
-        if (id !== '') {
-            others.id = id;
-        }
-
-        if (style) {
-            others.style = style;
-        }
-
-        const classNames = classnames({
-            accordion: true,
-            'accordion--wrapped': (isWrapped === true),
-            'accordion--open': hasFlag(this.state.currentState, OPEN),
-            [className]: className
-        });
-
-
-        const classNamesHead = classnames({
-            accordion__head: true,
-            ellipsis
-        });
-
-        const othersBody = {
-            style: {}
-        };
-
-        if (styleBody) {
-            othersBody.style = styleBody;
-        }
-
-
+        const { currentState } = this.state;
         return (
             <div
-                className={classNames}
-                data-group={dataGroup}
+                className={classNames({
+                    accordion: true,
+                    'accordion--wrapped': (isWrapped === true),
+                    'accordion--open': currentState === OPEN,
+                    [className]: className
+                })}
                 ref={(ref) => {
                     this.accordion = ref;
-                    if (reference) this.props.reference(ref);
+                    if (reference) reference(ref);
                 }}
-                {...others}
-                {...customProps}
+                id={id}
+                style={style}
             >
-                <div className={classNamesHead}>
-                    {this._renderHead()}
+                <div
+                    className="accordion__head"
+                    onClick={this.handleAccordionClick}
+                >
+                    {
+                        noIcon
+                            ? null
+                            : (
+                                <div
+                                    className={classNames('accordion__head__icon', {
+                                        'accordion__head__icon--no-rotate': noRotate,
+                                    })}
+                                >
+                                    {
+                                        chayns.utils.isString(icon) || icon.iconName
+                                            ? <Icon icon={icon}/>
+                                            : icon
+                                    }
+                                </div>
+                            )
+                    }
+                    <div
+                        className="accordion__head__title"
+                        style={{
+                            ...(noIcon ? { paddingLeft: '10px' } : null),
+                            ...(head && !chayns.utils.isString(head.open) && chayns.utils.isString(head.close) && isWrapped ? { fontWeight: 'inherit' } : null)
+                        }}
+                    >
+                        {/* eslint-disable-next-line no-nested-ternary */}
+                        {head ? (head.open ? (currentState === OPEN ? head.open : head.close) : head) : null}
+                    </div>
+                    {
+                        right || onSearch || onSearchEnter
+                            ? (
+                                <div className="accordion__head__right">
+                                    <div
+                                        className={classNames({
+                                            'right--search': onSearch || onSearchEnter
+                                        })}
+                                        style={{ opacity: (onSearch || onSearchEnter) && currentState === OPEN ? 0 : 1 }}
+                                    >
+                                        {right}
+                                    </div>
+                                    {
+                                        onSearch || onSearchEnter
+                                            ? (
+                                                <AccordionSearch
+                                                    onSearch={onSearch}
+                                                    onSearchEnter={onSearchEnter}
+                                                    currentState={currentState}
+                                                    searchPlaceholder={searchPlaceholder}
+                                                />
+                                            )
+                                            : null
+                                    }
+                                </div>
+                            )
+                            : null
+                    }
                 </div>
                 <div
                     className="accordion__body"
-                    ref={(ref) => { this._body = ref; }}
-                    {...othersBody}
+                    ref={(ref) => {
+                        this._body = ref;
+                    }}
+                    style={styleBody}
                 >
                     {this._getBody()}
                 </div>
@@ -282,52 +363,3 @@ class Accordion extends React.Component {
         );
     }
 }
-
-
-Accordion.propTypes = {
-    head: PropTypes.node.isRequired,
-    children: PropTypes.node.isRequired,
-    badge: PropTypes.node,
-    right: PropTypes.node,
-    renderClosed: PropTypes.bool,
-    isWrapped: PropTypes.bool,
-    dataGroup: PropTypes.string,
-    className: PropTypes.string,
-    id: PropTypes.string,
-    style: PropTypes.object,
-    styleBody: PropTypes.object,
-    onOpen: PropTypes.func,
-    onOpened: PropTypes.func,
-    onClose: PropTypes.func,
-    onClosed: PropTypes.func,
-    ellipsis: PropTypes.bool,
-    defaultOpened: PropTypes.bool,
-    reference: PropTypes.func,
-    autogrow: PropTypes.bool,
-    badgeStyle: PropTypes.object,
-    open: PropTypes.bool,
-};
-
-Accordion.defaultProps = {
-    className: '',
-    dataGroup: null,
-    id: null,
-    style: null,
-    styleBody: null,
-    onOpen: null,
-    onOpened: null,
-    onClose: null,
-    onClosed: null,
-    ellipsis: false,
-    defaultOpened: null,
-    reference: null,
-    isWrapped: false,
-    renderClosed: false,
-    badge: null,
-    right: null,
-    autogrow: false,
-    badgeStyle: null,
-    open: undefined,
-};
-
-export default Accordion;

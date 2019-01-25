@@ -1,50 +1,57 @@
-# TextString-Component #
+# TextString #
 
-The TextString-Component is part of the *chayns-components* package. It can be installed via npm:
+The TextString-Component loads, renders and changes your textString. It can also replace your replacements.
 
-    npm install -S chayns-components@latest
+If you are a Tobit.Software worker in the tobit.ag network, you are able to change textStrings using CTRL+Click on a textString.
 
 
 ## Usage ##
-At first the component needs to be imported:
 
-```jsx
-import { TextString } from 'chayns-components';
+At first the component has to be imported:
+
+```jsx harmony
+    import { TextString } from 'chayns-components';
 ```
 
-The component can be used in JSX like in the following example:
-```jsx
-<TextString textString="txt_mein_textstring" />
+Then, you need to load your lib before your components are rendered:
+```jsx harmony
+    TextString.loadLibrary('TextStringTest').then(() => {
+        ReactDom.render(
+            <App />,
+            document.querySelector('#tapp')
+        );
+    });
 ```
+
+Then it can be used like in the following example:
+```jsx harmony
+    <TextString
+        stringName="txt_chayns_textStringTest"
+        replacements={{ '##REPLACE##': chayns.env.user.name }}
+        fallback={"Test ##REPLACE##"}
+    >
+        <p style={{ color: 'red' }} />
+    </TextString>
+```
+
+If you need the textString as a string, e.g. for a dialog, you can use the static method `TextString.getTextString(stringName)`.
 
 
 ## Props ##
-| Property   | Description                                                                                         | Type   | Default Value |
-|------------|-----------------------------------------------------------------------------------------------------|--------|---------------|
-| textString | Name of the textstring (i.e. txt_rating_intro)                                                      | String |               |
-| renderHtml | Render the textstring as HTML                                                                       | Bool   | false         |
-| replace    | eplace placeholders with the given value                                                            | Object |               |
-| render     | Auto-render textstrings if they were set as an HTML attribute                                       | Bool   | true          |
+
+| Property   | Description                                                                            | Type     |
+|------------|----------------------------------------------------------------------------------------|----------|
+| stringName  | Name of the string.                                                                   | String   |
+| replacements | Replacements in an object                                                            | object   |
+| children    | Children where the textString will be rendered into.                                  | node     |
+| fallback    | Fallback string.                                                                      | string   |
+| useDangerouslySetInnerHTML | Use dangerouslySetInnerHTML (for strings with HTML content).           | bool     |
+| language | Language of the string (language need to be loaded before usage)                         | string   |
+| setProps | StringNames for children Props e.g. placeholder or accordion head                        | object   |
+| setProps.fallback | Fallback strings for setProps                                                   | object   |
+| preventNoTranslate | Prevents setting no-translate class to children if textString language is the same as tapp language | bool |
 
 
 ## Example ##
-### Replacing Variables ###
-```jsx
-<TextStrings
-    textString="txt_rating"
-    replace={{
-        '##location_id##': window.chayns.env.site.locationId,
-        '##site_id##': window.chayns.env.site.id
-    }}
-/>
-```
 
-
-### Usage of HTML###
-To use HTML in an textstring it has to be activated in the component.
-```jsx
-<TextStrings
-    textString="txt_rating"
-    renderHtml
-/>
-```
+You can take a look at the **examples** folder in the **react-chayns-textstring** repository. There you can find an appropriate way of implementing the **TextString** to your chayns-Tapp.

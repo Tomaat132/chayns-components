@@ -1,15 +1,14 @@
-import React from 'react';
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
-
+import classNames from 'classnames';
 import * as equalizer from '../../utils/equalizer';
-import ChooseButton from '../../react-chayns-button/component/ChooseButton';
-import Input from '../../react-chayns-input/component/Input';
 
+import Input from '../../react-chayns-input/component/Input';
 
 const AUTO_HIDE_INPUT_MAX_AMOUNT = 9;
 
-export default class AmountInput extends React.Component {
+export default class AmountInput extends PureComponent {
     static propTypes = {
         amount: PropTypes.number.isRequired,
         onAdd: PropTypes.func.isRequired,
@@ -17,68 +16,60 @@ export default class AmountInput extends React.Component {
         onChange: PropTypes.func.isRequired,
         buttonText: PropTypes.string.isRequired,
         showInput: PropTypes.bool.isRequired,
-        equalize: PropTypes.string,
         disabled: PropTypes.bool,
         disableInput: PropTypes.bool,
         autoInput: PropTypes.bool,
-        shopStyle: PropTypes.bool,
         buttonFormatHandler: PropTypes.func,
+        tempAmount: PropTypes.number,
+        tempValue: PropTypes.string,
+        setInput: PropTypes.func.isRequired,
+        equalize: PropTypes.string,
+        focusOnClick: PropTypes.bool,
+        contentWidth: PropTypes.number,
     };
 
     static defaultProps = {
-        equalize: null,
         disabled: false,
         disableInput: false,
         autoInput: false,
-        shopStyle: false,
         buttonFormatHandler: undefined,
+        tempAmount: 0,
+        tempValue: '0',
+        equalize: null,
+        focusOnClick: true,
+        contentWidth: null,
     };
 
-    constructor() {
-        super();
-
-        this.state = {
-            showInput: false
-        };
-    }
-
-    componentWillMount() {
-        const { amount } = this.props;
-
-        if (window.chayns.utils.isNumber(amount)) {
-            this.setState({
-                value: amount
-            });
-        }
+    constructor(props) {
+        super(props);
+        this.inputRef = React.createRef();
     }
 
     componentDidMount() {
         const { equalize } = this.props;
 
-        if(equalize) {
+        if (equalize) {
             equalizer.init();
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if(nextProps.amount !== this.props.amount && this.state.value !== nextProps.amount) {
-            this.setState({
-                value: nextProps.amount
-            });
-        }
+        const { equalize, showInput, focusOnClick } = this.props;
 
-        if(nextProps.equalize) {
+        if (nextProps.equalize !== equalize) {
             equalizer.init();
+        }
+        if (nextProps.showInput && !showInput && focusOnClick) {
+            setTimeout(() => {
+                this.inputRef.current.focus();
+            }, 20);
         }
     }
 
     onButtonClick = () => {
-        const { amount, onAdd } = this.props;
-
-        if(amount > 0) {
-            this.setState({
-                showInput: true
-            });
+        const { amount, onAdd, setInput } = this.props;
+        if (amount > 0) {
+            setInput(true);
         } else {
             onAdd();
         }
@@ -88,102 +79,80 @@ export default class AmountInput extends React.Component {
         let inputValue = value.replace(/[\D\s]+/g, '');
         inputValue = parseInt(inputValue, 10);
 
-        if(!window.chayns.utils.isNumber(inputValue)) {
-            inputValue = null;
+        if (Number.isNaN(inputValue)) {
+            inputValue = '';
         }
 
-        this.setState({
-            value: inputValue
-        });
+        const { onInput } = this.props;
 
-        if(this.props.onInput) {
-            this.props.onInput(inputValue);
+        if (onInput) {
+            onInput(inputValue);
         }
     };
 
     onInputBlur = () => {
-        const { onChange } = this.props;
-        const { value } = this.state;
-
-        if(onChange) {
-            onChange(value);
-        }
-
-        this.setState({
-            showInput: false
-        });
+        const { setInput, onChange } = this.props;
+        let { tempAmount } = this.props;
+        tempAmount = tempAmount === null ? 0 : tempAmount;
+        setInput(false);
+        onChange(tempAmount);
     };
 
     getButtonValue() {
         const { amount, buttonText, buttonFormatHandler } = this.props;
 
-        if(buttonFormatHandler) {
+        if (buttonFormatHandler) {
             return buttonFormatHandler({ amount, buttonText });
         }
 
-        if(amount > 0) {
+        if (amount > 0) {
             return `${amount}`;
         }
 
         return buttonText;
     }
 
-    getInputValue() {
-        const { amount } = this.props.amount;
-        const inputValue = this.state.value;
-
-        if(inputValue || inputValue === 0 || inputValue === '') {
-            return inputValue;
-        }
-
-        if(window.chayns.utils.isNumber(amount)) {
-            return amount;
-        }
-
-        return '';
-    }
-
     render() {
         const {
             amount,
-            equalize,
             disabled,
             disableInput,
             autoInput,
-            showInput: showInputProp,
-            shopStyle,
+            showInput,
+            equalize,
+            tempValue,
+            contentWidth,
         } = this.props;
-        const { showInput } = this.state;
 
-        if(((!autoInput || amount <= AUTO_HIDE_INPUT_MAX_AMOUNT) && !showInput && !showInputProp) || disableInput || disabled) {
-            const buttonClassName = classnames('cc__amount-control__button', {
-                'cc__amount-control__button--price': !amount,
-                'cc__amount-control__button--amount': amount
-            });
+        const renderInput = !disabled && !disableInput && ((autoInput && amount > AUTO_HIDE_INPUT_MAX_AMOUNT) || showInput);
 
-            return (
-                <ChooseButton
-                    onClick={this.onButtonClick}
-                    className={buttonClassName}
-                    data-cc-equalize-width={equalize}
-                    disabled={disabled}
-                >
-                    {this.getButtonValue()}
-                </ChooseButton>
-            );
-        }
-
-        return (
+        return [
             <Input
+                key="amountInput"
                 type="number"
-                value={this.getInputValue()}
+                value={tempValue}
                 onChange={this.onInputChange}
                 className="cc__amount-control__input"
                 onBlur={this.onInputBlur}
-                data-cc-equalize-width={equalize}
                 disabled={disabled}
-                autoFocus={!shopStyle && window.chayns.env.isDesktop}
-            />
-        );
+                onEnter={this.onInputBlur}
+                customProps={{ 'data-cc-equalize-width': equalize }}
+                inputRef={this.inputRef}
+                style={{ ...(contentWidth ? { width: `${contentWidth}px` } : null), ...(renderInput ? null : { display: 'none' }) }}
+            />,
+            <div
+                key="amountDiv"
+                onClick={this.onButtonClick}
+                className={classNames('cc__amount-control__button', {
+                    'cc__amount-control__button--price': !amount,
+                    'cc__amount-control__button--amount': amount,
+                    disabled,
+                })}
+                data-cc-equalize-width={equalize}
+                style={{ ...(contentWidth ? { width: `${contentWidth}px` } : null), ...(!renderInput ? null : { display: 'none' }) }}
+            >
+                {this.getButtonValue()}
+            </div>
+        ];
     }
 }

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import classNames from 'classnames';
+import Icon from '../../react-chayns-icon/component/Icon';
 
-export default class Button extends React.Component {
+export default class Button extends Component {
     static propTypes = {
         children: PropTypes.node.isRequired,
         chooseButton: PropTypes.bool,
@@ -11,6 +12,8 @@ export default class Button extends React.Component {
         className: PropTypes.string,
         style: PropTypes.object,
         buttonRef: PropTypes.func,
+        icon: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        secondary: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -20,7 +23,32 @@ export default class Button extends React.Component {
         onClick: null,
         disabled: false,
         chooseButton: false,
+        icon: null,
+        secondary: false,
     };
+
+    shouldComponentUpdate(nextProps) {
+        const {
+            buttonRef,
+            style,
+            className,
+            disabled,
+            chooseButton,
+            icon,
+            secondary,
+            children
+        } = this.props;
+
+        return (buttonRef !== nextProps.buttonRef
+            || style !== nextProps.style
+            || className !== nextProps.className
+            || disabled !== nextProps.disabled
+            || chooseButton !== nextProps.chooseButton
+            || icon !== nextProps.icon
+            || secondary !== nextProps.secondary
+            || children !== nextProps.children
+        );
+    }
 
     handleClick = (event) => {
         const { onClick, disabled } = this.props;
@@ -38,26 +66,42 @@ export default class Button extends React.Component {
             className,
             style,
             buttonRef,
-            onClick,
+            icon,
+            secondary,
             ...other
         } = this.props;
 
-        const classNames = classnames({
-            button: !chooseButton,
-            choosebutton: chooseButton,
-            'button--disabled': disabled,
-            [className]: className
-        });
-
         return (
             <button
-                className={classNames}
+                type="button"
+                className={classNames({
+                    button: !chooseButton,
+                    choosebutton: chooseButton,
+                    'button--disabled': disabled,
+                    'button--secondary': secondary,
+                    'button--icon': icon && !chooseButton,
+                    'choosebutton--icon': icon && chooseButton,
+                    [className]: className
+                })}
                 onClick={this.handleClick}
                 style={style}
                 disabled={disabled}
                 ref={buttonRef}
                 {...other}
             >
+                {
+                    icon
+                        ? (
+                            <span className={classNames({
+                                button__icon: !chooseButton,
+                                choosebutton__icon: chooseButton
+                            })}
+                            >
+                                <Icon icon={icon}/>
+                            </span>
+                        )
+                        : null
+                }
                 {children}
             </button>
         );

@@ -1,10 +1,15 @@
-import React from 'react';
+/* eslint-disable react/jsx-one-expression-per-line,jsx-a11y/click-events-have-key-events */
+import React, { Component } from 'react';
+import { faInfoCircle, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 
+import { faCoffee } from '@fortawesome/free-solid-svg-icons/faCoffee';
 import { ContextMenu } from '../../src/index';
-import '../../src/react-chayns-contextmenu/index.scss';
 import ExampleContainer from '../ExampleContainer';
+import Button from '../../src/react-chayns-button/component/Button';
+import Icon from '../../src/react-chayns-icon/component/Icon';
+import Accordion from '../../src/react-chayns-accordion/component/Accordion';
 
-export default class Example extends React.Component {
+export default class Example extends Component {
     constructor() {
         super();
 
@@ -12,25 +17,27 @@ export default class Example extends React.Component {
             x: 0,
             y: 0,
             hideContextMenu: true,
+            position: 0,
         };
 
         this.setContextMenu = this.setContextMenu.bind(this);
         this.removeContextMenu = this.removeContextMenu.bind(this);
         this.deleteOnClick = this.deleteOnClick.bind(this);
         this.addOnClick = this.addOnClick.bind(this);
+        this.buttonClick = this.buttonClick.bind(this);
     }
 
     setContextMenu(event) {
         this.setState({
             x: event.pageX,
             y: event.pageY,
-            hideContextMenu: false
+            hideContextMenu: false,
         });
     }
 
     removeContextMenu() {
         this.setState({
-            hideContextMenu: true
+            hideContextMenu: true,
         });
     }
 
@@ -48,32 +55,55 @@ export default class Example extends React.Component {
         });
     }
 
+    buttonClick() {
+        const { position } = this.state;
+        this.setState({ position: position + 1 });
+    }
+
     render() {
+        const {
+            x, y, hideContextMenu, position
+        } = this.state;
+
         const items = [
             {
-                className: 'fa fa-plus',
+                className: null,
                 onClick: this.addOnClick,
-                text: 'Hinzufügen'
+                text: 'Hinzufügen',
+                icon: faCoffee,
             },
             {
-                className: 'fa fa-trash-o',
+                className: null,
                 onClick: this.deleteOnClick,
-                text: 'Löschen'
+                text: 'Löschen',
+                icon: 'ts-tobit',
             }
         ];
 
-        return(
+        return (
             <ExampleContainer headline="ContextMenu">
-                <div style={{ margin: '15% 45%' }}>
-                    <i className="fa fa-info-circle" style={{ fontSize: '5rem', alignSelf: 'center' }} onClick={this.setContextMenu}/>
-                    <ContextMenu
-                        x={this.state.x}
-                        y={this.state.y}
-                        hide={this.state.hideContextMenu}
-                        items={items}
-                        onLayerClick={this.removeContextMenu}
-                    />
+                <ContextMenu
+                    coordinates={{
+                        x,
+                        y
+                    }}
+                    hide={hideContextMenu}
+                    items={items}
+                    onLayerClick={this.removeContextMenu}
+                    position={position % 4}
+                />
+                <Button onClick={this.buttonClick}>
+                    Position ändern
+                </Button>
+                <div style={{ margin: '15% 45%' }} onClick={this.setContextMenu}>
+                    <Icon icon={faInfoCircle} style={{ transform: 'scale(5)' }}/>
                 </div>
+                <ContextMenu items={items} position={position % 4}/>
+                <Accordion
+                    head="Accordion mit ContextMenu"
+                    right={<ContextMenu items={items} position={position % 4}/>}
+                >TEST
+                </Accordion>
             </ExampleContainer>
         );
     }

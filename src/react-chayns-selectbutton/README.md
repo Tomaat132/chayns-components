@@ -1,4 +1,4 @@
-# SelectButton-Component #
+# SelectButton #
 
 The SelectButton-Component is part of the *chayns-components*-Package. You can install it with the following command:
 
@@ -6,15 +6,16 @@ The SelectButton-Component is part of the *chayns-components*-Package. You can i
 
 
 ## Usage ##
+
 You have to import the component first:
 
-```jsx
+```jsx harmony
 import { SelectButton } from 'chayns-components';
 ```
 
-
 You can now use the component as follows:
-```jsx
+
+```jsx harmony
 <SelectButton
     label="Select-Button"
     list={list}
@@ -24,28 +25,31 @@ You can now use the component as follows:
 />
 ```
 
-### Props (SelectButton) ###
+
+## Props ##
+
 You can set the following props on a SelectButton element:
 
 | Property   | Description                                                                                        | Type    | Default |
 |------------|-----------------------------------------------------------------------------------------------------|--------|--------------|
-| onSelect | Callback that will be triggered when items were selected                                       | function | |
-| title | A title shown on top of the dialog window                                                         | string   | 'Select Dialog' |
-| description | A description for the dialog placed right below the title                                   | string   | 'Please select an item' |
-| label | The text shown inside the button                                                                  | string   | 'Select' |
-| list | An array containing elements to select from                                                        | object[] | |
-| listKey | The identifier of the list items. It is required for the dialog to work                         | string   | |
-| listValue | The value of the list items. It is shown in the dialog for each item                          | string   | |
-| multiSelect | If true, more than one item can be selected                                                 | boolean  | false |
-| quickFind | If true, a search input is shown above the list                                               | boolean  | false |
-| className | Add additional classes to the button                                                          | string   | |
-| style     | Add additional styles  to the button                                                          | object   | |
+| onSelect | Callback that will be triggered when items were selected.                                       | function | |
+| title | A title shown on top of the dialog window.                                                          | string   | '' |
+| description | A description for the dialog placed right below the title.                                    | string   | '' |
+| disabled | If true, the button will be disabled. | bool | false |
+| label | The text shown inside the button.                                                                  | string   | 'Select' |
+| list | An array containing elements to select from.                                                        | array | |
+| listKey | The identifier of the list items. It is required for the dialog to work.                         | string   | name |
+| listValue | The value of the list items. It is shown in the dialog for each item.                          | string   | value |
+| multiSelect | If true, more than one item can be selected.                                               | bool  | false |
+| quickFind | If true, a search input is shown above the list.                                               | bool  | false |
+| className | Add additional classes to the button.                                                          | string   | |
+| showSelection | Shows selection in button. | bool | true |
+| selectedFlag | The name of the flag which sets an item selected | string | isSelected |
 
 ### Examples ###
 
-#### selectFirst ####
-The following example will implement a chayns® chooseButton which onClick opens a selectDialog using the defined array :
-```jsx
+The following example will implement a chayns® chooseButton which onClick opens a selectDialog using the defined array:
+```jsx harmony
 let pizza = [
     {
         id: '0', //this is the listKey
@@ -70,7 +74,7 @@ return (
     <SelectButton
         label="Select Pizza"
         list={pizza}
-        onSelect={(value) => { console.log(value) }}
+        onSelect={console.log}
         listKey="id"
         listValue="name"
     />

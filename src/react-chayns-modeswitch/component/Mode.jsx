@@ -1,84 +1,40 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ModeSwitchHelper from './ModeSwitchHelper';
+import ModeSwitch from './ModeSwitch';
 
-export default class Mode extends React.Component {
+export default class Mode extends Component {
     static propTypes = {
-        group: PropTypes.oneOfType([
-            PropTypes.number,
-            PropTypes.arrayOf(PropTypes.number)
-        ]),
-        mode: PropTypes.number,
-        modes: PropTypes.arrayOf(PropTypes.number),
-        children: PropTypes.node.isRequired
+        modes: PropTypes.arrayOf(PropTypes.number).isRequired,
+        children: PropTypes.node.isRequired,
+        className: PropTypes.string,
     };
 
     static defaultProps = {
-        group: null,
-        mode: null,
-        modes: null
+        className: null
     };
 
     constructor() {
         super();
-
-        this.state = {
-            modeId: ModeSwitchHelper.getCurrentMode().id
-        };
-    }
-
-    componentWillMount() {
-        ModeSwitchHelper.onChange(this.updatedMode);
-
-        this.setState({
-            // eslint-disable-next-line react/no-unused-state
-            group: ModeSwitchHelper.getCurrentMode().id
-        });
+        this.state = { modeId: null };
+        ModeSwitch.addChangeListener(this.updatedMode);
     }
 
     componentWillUnmount() {
-        ModeSwitchHelper.unregisterOnChange(this.updatedMode);
+        ModeSwitch.removeChangeListener(this.updatedMode);
     }
 
-    updatedMode = (group) => {
+    updatedMode = (mode) => {
         this.setState({
-            modeId: group.id
+            modeId: mode.id
         });
     };
 
-    renderChildren() {
-        if(window.chayns.utils.isArray(this.props.children)) {
-            return(
-                <div className="modeswitch__mode">
-                    {
-                        this.props.children.map((element) => {
-                            return element;
-                        })
-                    }
-                </div>);
-        }
-
-        return this.props.children;
-    }
-
     render() {
-        if(!ModeSwitchHelper.isInitialized()) return null;
+        const { modeId } = this.state;
+        const { modes, children, className } = this.props;
 
-        if(window.chayns.utils.isNumber(this.props.mode) && this.state.modeId === this.props.mode) {
-            return this.renderChildren();
-        }
-
-        if(window.chayns.utils.isArray(this.props.modes) && this.props.modes.indexOf(this.state.modeId) !== -1) {
-            return this.renderChildren();
-        }
-
-
-        if(window.chayns.utils.isNumber(this.props.group) && this.state.modeId === this.props.group) {
-            return this.renderChildren();
-        }
-
-        if(window.chayns.utils.isArray(this.props.group) && this.props.group.indexOf(this.state.modeId) !== -1) {
-            return this.renderChildren();
+        if (window.chayns.utils.isArray(modes) && (modes.indexOf(modeId) !== -1 || (modes.indexOf(-1) !== -1 && !chayns.env.user.isAuthenticated))) {
+            return <div className={className}>{children}</div>;
         }
 
         return null;

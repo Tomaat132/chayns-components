@@ -1,33 +1,53 @@
-import React from 'react';
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { Component } from 'react';
 
 import ExampleContainer from '../ExampleContainer';
 import { SmallWaitCursor } from '../../src/index';
-import '../../src/react-chayns-smallwaitcursor/index.scss';
 
-export default class Example extends React.Component {
-    state = {
-        open: true
-    };
+export default class Example extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { show: true };
+    }
 
     render() {
-        return(
+        const { show } = this.state;
+        return (
             <ExampleContainer headline="SmallWaitCursor">
-                <h2>inline WaitCursor</h2>
                 <SmallWaitCursor
-                    show
+                    show={show}
                 />
-
-                <h2>inline WaitCursor</h2>
                 <div
                     style={{
-                        position: 'relative',
-                        height: '200px',
-                        backgroundColor: chayns.getSchemeColor()
+                        width: '100%',
+                        padding: '10px',
+                        marginTop: '10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                    className="chayns__background-color--white-4"
+                    onClick={() => {
+                        this.setState({ show: !show });
                     }}
                 >
                     <SmallWaitCursor
-                        absolute
-                        show
+                        show={show}
+                    />
+                </div>
+                <div
+                    style={{
+                        width: '100%',
+                        padding: '10px',
+                        marginTop: '10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                    }}
+                >
+                    <SmallWaitCursor
+                        show={show}
+                        showBackground={false}
                     />
                 </div>
             </ExampleContainer>

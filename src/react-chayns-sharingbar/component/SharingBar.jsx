@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import SharingBarItem from './SharingBarItem';
 import { getAvailableShareProviders, getDefaultShareLink } from './sharingHelper';
 
-export default class SharingBar extends React.Component {
+export default class SharingBar extends Component {
     static propTypes = {
         link: PropTypes.string,
         className: PropTypes.string
@@ -24,6 +24,8 @@ export default class SharingBar extends React.Component {
 
     componentWillMount() {
         getAvailableShareProviders().then((provider) => {
+            const { link } = this.props;
+
             const sharingItems = [];
 
             provider.map((item) => {
@@ -34,29 +36,25 @@ export default class SharingBar extends React.Component {
                             name={item.name}
                             provider={item}
                             key={item.id}
-                            link={this.props.link || getDefaultShareLink()}
+                            link={link || getDefaultShareLink()}
                         />
                     ));
                 }
             });
 
             this.setState({
-                sharingProvider: sharingItems
+                sharingProvider: sharingItems // TODO: save data in state and not components
             });
         });
     }
 
     render() {
         const { className } = this.props;
-
-        const classNames = classnames({
-            'sharing-bar__item-list': 'sharing-bar__item-list',
-            [className]: className
-        });
+        const { sharingProvider } = this.state;
 
         return (
-            <div className={classNames}>
-                {this.state.sharingProvider}
+            <div className={classNames('sharing-bar__item-list', className)}>
+                {sharingProvider}
             </div>
         );
     }
